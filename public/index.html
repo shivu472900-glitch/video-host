@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Video Host</title>
+</head>
+<body>
+  <h2>Upload Video to S3</h2>
+  <input id="file" type="file" accept="video/*">
+  <button onclick="upload()">Upload</button>
+  <p id="msg"></p>
+
+<script>
+async function upload() {
+  const f = document.getElementById('file').files[0];
+  if (!f) return alert("Select a file");
+
+  const presign = await fetch('/presign', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ filename: f.name, contentType: f.type })
+  }).then(r=>r.json());
+
+  await fetch(presign.uploadUrl, { method:'PUT', body:f, headers:{'Content-Type':f.type} });
+
+  document.getElementById('msg').innerHTML =
+    'Uploaded: <a href="'+presign.publicUrl+'" target="_blank">'+presign.publicUrl+'</a>';
+}
+</script>
+</body>
+  </html>
